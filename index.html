@@ -1,0 +1,1669 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>yt-dlp Command Builder — Generate Download Commands Instantly</title>
+	<meta name="description"
+		content="Easily generate yt-dlp download commands for YouTube, Twitch, and 1000+ sites. Pick quality, format, subtitles, and more with a visual builder." />
+	<link rel="preconnect" href="https://fonts.googleapis.com" />
+	<link
+		href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap"
+		rel="stylesheet" />
+	<style>
+		*,
+		*::before,
+		*::after {
+			box-sizing: border-box;
+			margin: 0;
+			padding: 0;
+		}
+
+		:root {
+			--bg: #0a0d14;
+			--surface: #111520;
+			--card: #161b2e;
+			--border: rgba(255, 255, 255, 0.08);
+			--accent: #6c63ff;
+			--accent2: #ff4f6d;
+			--green: #22d3a5;
+			--yellow: #f5c842;
+			--text: #e8eaf6;
+			--muted: #7b82a6;
+			--radius: 14px;
+			--font: 'Inter', sans-serif;
+			--mono: 'JetBrains Mono', monospace;
+			--trans: 0.22s cubic-bezier(.4, 0, .2, 1);
+		}
+
+		html {
+			scroll-behavior: smooth;
+		}
+
+		body {
+			font-family: var(--font);
+			background: var(--bg);
+			color: var(--text);
+			min-height: 100vh;
+			padding: 0 16px 60px;
+		}
+
+		/* ── HERO HEADER ── */
+		header {
+			max-width: 900px;
+			margin: 0 auto;
+			padding: 48px 0 24px;
+			text-align: center;
+		}
+
+		.logo-pill {
+			display: inline-flex;
+			align-items: center;
+			gap: 8px;
+			background: rgba(108, 99, 255, .15);
+			border: 1px solid rgba(108, 99, 255, .35);
+			border-radius: 999px;
+			padding: 6px 16px;
+			font-size: 13px;
+			font-weight: 600;
+			color: #a09bff;
+			margin-bottom: 20px;
+			letter-spacing: .5px;
+		}
+
+		.logo-pill span {
+			font-size: 16px;
+		}
+
+		header h1 {
+			font-size: clamp(2rem, 5vw, 3.2rem);
+			font-weight: 800;
+			line-height: 1.15;
+			background: linear-gradient(135deg, #fff 30%, #a09bff 100%);
+			-webkit-background-clip: text;
+			-webkit-text-fill-color: transparent;
+			background-clip: text;
+			margin-bottom: 12px;
+		}
+
+		header p {
+			font-size: 1rem;
+			color: var(--muted);
+			max-width: 520px;
+			margin: 0 auto;
+			line-height: 1.65;
+		}
+
+		/* ── MAIN LAYOUT ── */
+		.builder {
+			max-width: 900px;
+			margin: 0 auto;
+			display: grid;
+			grid-template-columns: 1fr;
+			gap: 20px;
+		}
+
+		/* ── CARDS ── */
+		.card {
+			background: var(--card);
+			border: 1px solid var(--border);
+			border-radius: var(--radius);
+			padding: 24px;
+			transition: border-color var(--trans);
+		}
+
+		.card:hover {
+			border-color: rgba(108, 99, 255, .35);
+		}
+
+		.card-title {
+			font-size: .78rem;
+			font-weight: 700;
+			letter-spacing: 1.2px;
+			text-transform: uppercase;
+			color: var(--muted);
+			margin-bottom: 16px;
+			display: flex;
+			align-items: center;
+			gap: 8px;
+		}
+
+		.card-title .dot {
+			width: 7px;
+			height: 7px;
+			border-radius: 50%;
+			background: var(--accent);
+			box-shadow: 0 0 6px var(--accent);
+		}
+
+		/* ── FORM ELEMENTS ── */
+		label {
+			display: block;
+			font-size: .82rem;
+			font-weight: 500;
+			color: var(--muted);
+			margin-bottom: 6px;
+		}
+
+		input[type="text"],
+		input[type="number"],
+		select,
+		textarea {
+			width: 100%;
+			background: rgba(255, 255, 255, 0.04);
+			border: 1px solid var(--border);
+			border-radius: 9px;
+			color: var(--text);
+			font-family: var(--font);
+			font-size: .9rem;
+			padding: 10px 14px;
+			outline: none;
+			transition: border-color var(--trans), box-shadow var(--trans);
+			appearance: none;
+		}
+
+		input[type="text"]:focus,
+		input[type="number"]:focus,
+		select:focus,
+		textarea:focus {
+			border-color: var(--accent);
+			box-shadow: 0 0 0 3px rgba(108, 99, 255, .18);
+		}
+
+		input[type="text"]::placeholder {
+			color: #434868;
+		}
+
+		select option {
+			background: #1a1f35;
+		}
+
+		.field {
+			margin-bottom: 16px;
+		}
+
+		.field:last-child {
+			margin-bottom: 0;
+		}
+
+		.grid-2 {
+			display: grid;
+			grid-template-columns: 1fr 1fr;
+			gap: 14px;
+		}
+
+		.grid-3 {
+			display: grid;
+			grid-template-columns: 1fr 1fr 1fr;
+			gap: 14px;
+		}
+
+		@media (max-width: 600px) {
+
+			.grid-2,
+			.grid-3 {
+				grid-template-columns: 1fr;
+			}
+		}
+
+		/* URL bar */
+		.url-wrap {
+			position: relative;
+			display: flex;
+			align-items: center;
+			gap: 10px;
+		}
+
+		.url-wrap input {
+			flex: 1;
+			padding-left: 42px;
+			font-size: .95rem;
+		}
+
+		.url-icon {
+			position: absolute;
+			left: 14px;
+			font-size: 15px;
+			pointer-events: none;
+			opacity: .55;
+		}
+
+		.url-paste-btn {
+			flex-shrink: 0;
+			background: rgba(108, 99, 255, .18);
+			border: 1px solid rgba(108, 99, 255, .35);
+			color: #a09bff;
+			border-radius: 8px;
+			padding: 10px 14px;
+			font-size: .82rem;
+			font-weight: 600;
+			cursor: pointer;
+			white-space: nowrap;
+			transition: background var(--trans);
+		}
+
+		.url-paste-btn:hover {
+			background: rgba(108, 99, 255, .3);
+		}
+
+		/* ── TOGGLE PILLS (tab-style selectors) ── */
+		.pill-group {
+			display: flex;
+			gap: 6px;
+			flex-wrap: wrap;
+		}
+
+		.pill {
+			background: rgba(255, 255, 255, .04);
+			border: 1px solid var(--border);
+			border-radius: 8px;
+			padding: 7px 14px;
+			font-size: .82rem;
+			font-weight: 500;
+			color: var(--muted);
+			cursor: pointer;
+			transition: all var(--trans);
+			user-select: none;
+		}
+
+		.pill:hover {
+			border-color: rgba(108, 99, 255, .4);
+			color: var(--text);
+		}
+
+		.pill.active {
+			background: rgba(108, 99, 255, .22);
+			border-color: rgba(108, 99, 255, .6);
+			color: #c9c6ff;
+			font-weight: 600;
+		}
+
+		/* ── TOGGLE SWITCHES ── */
+		.switch-list {
+			display: grid;
+			grid-template-columns: 1fr 1fr;
+			gap: 10px;
+		}
+
+		@media (max-width: 520px) {
+			.switch-list {
+				grid-template-columns: 1fr;
+			}
+		}
+
+		.switch-item {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			background: rgba(255, 255, 255, .03);
+			border: 1px solid var(--border);
+			border-radius: 10px;
+			padding: 12px 14px;
+			cursor: pointer;
+			transition: border-color var(--trans), background var(--trans);
+			gap: 10px;
+		}
+
+		.switch-item:hover {
+			border-color: rgba(108, 99, 255, .35);
+			background: rgba(108, 99, 255, .06);
+		}
+
+		.switch-item.on {
+			border-color: rgba(34, 211, 165, .4);
+			background: rgba(34, 211, 165, .07);
+		}
+
+		.switch-label {
+			display: flex;
+			flex-direction: column;
+			gap: 2px;
+		}
+
+		.switch-label strong {
+			font-size: .85rem;
+			font-weight: 600;
+			color: var(--text);
+		}
+
+		.switch-label span {
+			font-size: .75rem;
+			color: var(--muted);
+		}
+
+		.toggle {
+			width: 40px;
+			height: 22px;
+			background: rgba(255, 255, 255, .1);
+			border-radius: 999px;
+			position: relative;
+			flex-shrink: 0;
+			transition: background var(--trans);
+		}
+
+		.toggle::after {
+			content: '';
+			position: absolute;
+			left: 3px;
+			top: 3px;
+			width: 16px;
+			height: 16px;
+			background: #fff;
+			border-radius: 50%;
+			transition: transform var(--trans);
+		}
+
+		.switch-item.on .toggle {
+			background: var(--green);
+		}
+
+		.switch-item.on .toggle::after {
+			transform: translateX(18px);
+		}
+
+		/* ── FORMAT SELECTOR ── */
+		.format-selector {
+			display: flex;
+			gap: 8px;
+			flex-wrap: wrap;
+		}
+
+		.fmt-btn {
+			display: flex;
+			align-items: center;
+			gap: 6px;
+			background: rgba(255, 255, 255, .04);
+			border: 1px solid var(--border);
+			border-radius: 9px;
+			padding: 8px 16px;
+			font-size: .82rem;
+			font-weight: 600;
+			color: var(--muted);
+			cursor: pointer;
+			transition: all var(--trans);
+		}
+
+		.fmt-btn:hover {
+			border-color: rgba(108, 99, 255, .4);
+			color: var(--text);
+		}
+
+		.fmt-btn.active {
+			background: rgba(108, 99, 255, .2);
+			border-color: var(--accent);
+			color: #c9c6ff;
+		}
+
+		.fmt-badge {
+			font-size: .65rem;
+			background: var(--accent);
+			color: #fff;
+			border-radius: 4px;
+			padding: 1px 5px;
+		}
+
+		/* ── OUTPUT SECTION ── */
+		.output-card {
+			background: #0d1117;
+			border: 1px solid var(--border);
+			border-radius: var(--radius);
+			overflow: hidden;
+		}
+
+		.output-header {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			padding: 12px 18px;
+			background: rgba(255, 255, 255, .03);
+			border-bottom: 1px solid var(--border);
+		}
+
+		.output-dots {
+			display: flex;
+			gap: 6px;
+		}
+
+		.output-dots span {
+			width: 12px;
+			height: 12px;
+			border-radius: 50%;
+		}
+
+		.output-dots span:nth-child(1) {
+			background: #ff5f56;
+		}
+
+		.output-dots span:nth-child(2) {
+			background: #ffbd2e;
+		}
+
+		.output-dots span:nth-child(3) {
+			background: #27c93f;
+		}
+
+		.output-label {
+			font-size: .75rem;
+			color: var(--muted);
+			font-family: var(--mono);
+		}
+
+		.copy-btn {
+			display: flex;
+			align-items: center;
+			gap: 6px;
+			background: rgba(108, 99, 255, .18);
+			border: 1px solid rgba(108, 99, 255, .35);
+			border-radius: 7px;
+			color: #a09bff;
+			font-size: .8rem;
+			font-weight: 600;
+			padding: 5px 12px;
+			cursor: pointer;
+			transition: all var(--trans);
+		}
+
+		.copy-btn:hover {
+			background: rgba(108, 99, 255, .32);
+		}
+
+		.copy-btn.copied {
+			background: rgba(34, 211, 165, .18);
+			border-color: rgba(34, 211, 165, .4);
+			color: var(--green);
+		}
+
+		/* ── ACTION BUTTONS (terminal + bat) ── */
+		.action-btns {
+			display: flex;
+			gap: 8px;
+			align-items: center;
+			flex-wrap: wrap;
+		}
+
+		.term-btn {
+			display: flex;
+			align-items: center;
+			gap: 6px;
+			border-radius: 7px;
+			font-size: .8rem;
+			font-weight: 600;
+			padding: 5px 12px;
+			cursor: pointer;
+			transition: all var(--trans);
+			white-space: nowrap;
+		}
+
+		.term-btn-open {
+			background: rgba(34, 211, 165, .15);
+			border: 1px solid rgba(34, 211, 165, .35);
+			color: var(--green);
+		}
+
+		.term-btn-open:hover {
+			background: rgba(34, 211, 165, .28);
+			box-shadow: 0 0 12px rgba(34, 211, 165, .2);
+		}
+
+		.term-btn-open.loading {
+			opacity: .7;
+			cursor: wait;
+			animation: pulse-green 1s infinite;
+		}
+
+		.term-btn-open.error {
+			background: rgba(255, 79, 109, .15);
+			border-color: rgba(255, 79, 109, .4);
+			color: #ff4f6d;
+			animation: shake .35s;
+		}
+
+		.term-btn-bat {
+			background: rgba(245, 200, 66, .12);
+			border: 1px solid rgba(245, 200, 66, .3);
+			color: var(--yellow);
+		}
+
+		.term-btn-bat:hover {
+			background: rgba(245, 200, 66, .22);
+		}
+
+		@keyframes pulse-green {
+
+			0%,
+			100% {
+				box-shadow: 0 0 0 0 rgba(34, 211, 165, .4);
+			}
+
+			50% {
+				box-shadow: 0 0 0 6px rgba(34, 211, 165, .0);
+			}
+		}
+
+		@keyframes shake {
+
+			0%,
+			100% {
+				transform: translateX(0);
+			}
+
+			20%,
+			60% {
+				transform: translateX(-4px);
+			}
+
+			40%,
+			80% {
+				transform: translateX(4px);
+			}
+		}
+
+		#command-output {
+			font-family: var(--mono);
+			font-size: .88rem;
+			color: #7ee787;
+			padding: 20px 22px;
+			min-height: 80px;
+			word-break: break-all;
+			line-height: 1.7;
+			white-space: pre-wrap;
+		}
+
+		#command-output .cmd-base {
+			color: #d2a8ff;
+			font-weight: 600;
+		}
+
+		#command-output .cmd-flag {
+			color: #79c0ff;
+		}
+
+		#command-output .cmd-value {
+			color: #a5d6ff;
+		}
+
+		#command-output .cmd-url {
+			color: #ffa657;
+			text-decoration: underline;
+		}
+
+		#command-output .cmd-placeholder {
+			color: #434868;
+			font-style: italic;
+		}
+
+		/* ── GENERATE BUTTON ── */
+		.generate-btn {
+			width: 100%;
+			padding: 16px;
+			border: none;
+			border-radius: var(--radius);
+			background: linear-gradient(135deg, var(--accent) 0%, #8b5cf6 60%, var(--accent2) 100%);
+			color: #fff;
+			font-family: var(--font);
+			font-size: 1rem;
+			font-weight: 700;
+			cursor: pointer;
+			letter-spacing: .4px;
+			position: relative;
+			overflow: hidden;
+			transition: transform var(--trans), box-shadow var(--trans);
+			box-shadow: 0 4px 24px rgba(108, 99, 255, .4);
+		}
+
+		.generate-btn:hover {
+			transform: translateY(-2px);
+			box-shadow: 0 8px 32px rgba(108, 99, 255, .55);
+		}
+
+		.generate-btn:active {
+			transform: translateY(0);
+		}
+
+		.generate-btn .btn-ripple {
+			position: absolute;
+			border-radius: 50%;
+			background: rgba(255, 255, 255, .25);
+			transform: scale(0);
+			animation: ripple .5s linear;
+			pointer-events: none;
+		}
+
+		@keyframes ripple {
+			to {
+				transform: scale(4);
+				opacity: 0;
+			}
+		}
+
+		/* ── PRESETS ── */
+		.presets-grid {
+			display: grid;
+			grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+			gap: 10px;
+		}
+
+		.preset-btn {
+			background: rgba(255, 255, 255, .03);
+			border: 1px solid var(--border);
+			border-radius: 10px;
+			padding: 14px 12px;
+			cursor: pointer;
+			text-align: left;
+			transition: all var(--trans);
+		}
+
+		.preset-btn:hover {
+			border-color: rgba(108, 99, 255, .45);
+			background: rgba(108, 99, 255, .08);
+			transform: translateY(-2px);
+		}
+
+		.preset-icon {
+			font-size: 1.4rem;
+			margin-bottom: 6px;
+		}
+
+		.preset-name {
+			font-size: .85rem;
+			font-weight: 600;
+			color: var(--text);
+		}
+
+		.preset-desc {
+			font-size: .72rem;
+			color: var(--muted);
+			margin-top: 2px;
+		}
+
+		/* ── CHEATSHEET SECTION ── */
+		.cheatsheet {
+			max-width: 900px;
+			margin: 30px auto 0;
+		}
+
+		.cheat-title {
+			font-size: .78rem;
+			font-weight: 700;
+			letter-spacing: 1.2px;
+			text-transform: uppercase;
+			color: var(--muted);
+			margin-bottom: 14px;
+		}
+
+		.cheat-grid {
+			display: grid;
+			grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+			gap: 10px;
+		}
+
+		.cheat-item {
+			background: var(--card);
+			border: 1px solid var(--border);
+			border-radius: 10px;
+			padding: 12px 14px;
+			display: flex;
+			flex-direction: column;
+			gap: 4px;
+		}
+
+		.cheat-cmd {
+			font-family: var(--mono);
+			font-size: .78rem;
+			color: #7ee787;
+			background: rgba(255, 255, 255, .04);
+			border-radius: 5px;
+			padding: 4px 8px;
+			word-break: break-all;
+		}
+
+		.cheat-desc {
+			font-size: .77rem;
+			color: var(--muted);
+		}
+
+		/* ── FOOTER ── */
+		footer {
+			text-align: center;
+			padding: 40px 16px 0;
+			font-size: .78rem;
+			color: #3a4060;
+		}
+
+		footer a {
+			color: #5a6090;
+			text-decoration: none;
+		}
+
+		footer a:hover {
+			color: var(--accent);
+		}
+
+		/* ── ANIMATED GRADIENT GLOW ── */
+		.hero-glow {
+			position: fixed;
+			top: -200px;
+			left: 50%;
+			transform: translateX(-50%);
+			width: 700px;
+			height: 500px;
+			background: radial-gradient(ellipse, rgba(108, 99, 255, .12) 0%, transparent 70%);
+			pointer-events: none;
+			z-index: 0;
+		}
+
+		/* ── TOAST ── */
+		#toast {
+			position: fixed;
+			bottom: 28px;
+			left: 50%;
+			transform: translateX(-50%) translateY(80px);
+			background: var(--card);
+			border: 1px solid rgba(34, 211, 165, .4);
+			border-radius: 999px;
+			color: var(--green);
+			font-size: .85rem;
+			font-weight: 600;
+			padding: 10px 22px;
+			box-shadow: 0 8px 30px rgba(0, 0, 0, .5);
+			transition: transform .3s cubic-bezier(.4, 0, .2, 1), opacity .3s;
+			opacity: 0;
+			pointer-events: none;
+			z-index: 9999;
+		}
+
+		#toast.show {
+			transform: translateX(-50%) translateY(0);
+			opacity: 1;
+		}
+
+		/* section wrapper above fold */
+		section {
+			position: relative;
+			z-index: 1;
+		}
+	</style>
+</head>
+
+<body>
+
+	<div class="hero-glow"></div>
+	<div id="toast">✓ Command copied to clipboard!</div>
+
+	<!-- HEADER -->
+	<header>
+		<img src="logo.png" alt="Sen Education Logo"
+			style="height: 100px; margin-bottom: 20px; border-radius: 12px; filter: drop-shadow(0 4px 12px rgba(108, 99, 255, 0.2));"><br>
+		<div class="logo-pill"><span>⬇️</span> yt-dlp Command Builder</div>
+		<h1>Generate yt-dlp Commands<br>Instantly</h1>
+		<p>A visual builder for downloading videos from YouTube, Twitch, and 1000+ sites. No memorising flags.</p>
+	</header>
+
+	<div class="builder">
+
+		<!-- ── PRESETS ── -->
+		<section>
+			<div class="card">
+				<div class="card-title"><span class="dot"></span>Quick Presets</div>
+				<div class="presets-grid">
+					<button class="preset-btn" onclick="applyPreset('best')" id="preset-best">
+						<div class="preset-icon">🏆</div>
+						<div class="preset-name">Best Quality</div>
+						<div class="preset-desc">Best video + audio</div>
+					</button>
+					<button class="preset-btn" onclick="applyPreset('1080p')" id="preset-1080p">
+						<div class="preset-icon">📺</div>
+						<div class="preset-name">Full HD</div>
+						<div class="preset-desc">1080p MP4</div>
+					</button>
+					<button class="preset-btn" onclick="applyPreset('720p')" id="preset-720p">
+						<div class="preset-icon">🎬</div>
+						<div class="preset-name">HD 720p</div>
+						<div class="preset-desc">Balanced size</div>
+					</button>
+					<button class="preset-btn" onclick="applyPreset('audio')" id="preset-audio">
+						<div class="preset-icon">🎵</div>
+						<div class="preset-name">Audio Only</div>
+						<div class="preset-desc">MP3 320kbps</div>
+					</button>
+					<button class="preset-btn" onclick="applyPreset('playlist')" id="preset-playlist">
+						<div class="preset-icon">📋</div>
+						<div class="preset-name">Playlist</div>
+						<div class="preset-desc">Batch download</div>
+					</button>
+					<button class="preset-btn" onclick="applyPreset('subtitles')" id="preset-subtitles">
+						<div class="preset-icon">💬</div>
+						<div class="preset-name">With Subtitles</div>
+						<div class="preset-desc">Auto-embed subs</div>
+					</button>
+				</div>
+			</div>
+		</section>
+
+		<!-- ── URL INPUT ── -->
+		<section>
+			<div class="card">
+				<div class="card-title"><span class="dot"></span>URL</div>
+				<div class="field">
+					<label for="url-input">Video or Playlist URL</label>
+					<div class="url-wrap">
+						<span class="url-icon">🔗</span>
+						<input type="text" id="url-input" placeholder="https://www.youtube.com/watch?v=..."
+							autocomplete="off" />
+						<button class="url-paste-btn" onclick="pasteUrl()">📋 Paste</button>
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<!-- ── FORMAT & QUALITY ── -->
+		<section>
+			<div class="card">
+				<div class="card-title"><span class="dot"></span>Format &amp; Quality</div>
+
+				<div class="field">
+					<label>Output Format</label>
+					<div class="format-selector">
+						<button class="fmt-btn active" data-fmt="mp4" onclick="setFmt(this,'mp4')">🎥 MP4 <span
+								class="fmt-badge">pop</span></button>
+						<button class="fmt-btn" data-fmt="mkv" onclick="setFmt(this,'mkv')">📦 MKV</button>
+						<button class="fmt-btn" data-fmt="webm" onclick="setFmt(this,'webm')">🌐 WebM</button>
+						<button class="fmt-btn" data-fmt="mp3" onclick="setFmt(this,'mp3')">🎵 MP3</button>
+						<button class="fmt-btn" data-fmt="m4a" onclick="setFmt(this,'m4a')">🎼 M4A</button>
+						<button class="fmt-btn" data-fmt="opus" onclick="setFmt(this,'opus')">🔊 Opus</button>
+						<button class="fmt-btn" data-fmt="flac" onclick="setFmt(this,'flac')">💿 FLAC</button>
+					</div>
+				</div>
+
+				<div class="grid-2 field">
+					<div>
+						<label for="quality-sel">Video Quality</label>
+						<select id="quality-sel">
+							<option value="bestvideo+bestaudio/best">Best Available</option>
+							<option value="bv*[height<=2160]+ba/b[height<=2160]">4K (2160p)</option>
+							<option value="bv*[height<=1440]+ba/b[height<=1440]">2K (1440p)</option>
+							<option value="bv*[height<=1080]+ba/b[height<=1080]" selected>Full HD (1080p)</option>
+							<option value="bv*[height<=720]+ba/b[height<=720]">HD (720p)</option>
+							<option value="bv*[height<=480]+ba/b[height<=480]">SD (480p)</option>
+							<option value="bv*[height<=360]+ba/b[height<=360]">360p</option>
+							<option value="ba/b">Audio Only</option>
+							<option value="custom">Custom Format String</option>
+						</select>
+					</div>
+					<div>
+						<label for="codec-sel">Preferred Codec</label>
+						<select id="codec-sel">
+							<option value="">Any</option>
+							<option value="avc">H.264 (AVC)</option>
+							<option value="vp9">VP9</option>
+							<option value="av01">AV1</option>
+							<option value="hvc1">H.265 (HEVC)</option>
+						</select>
+					</div>
+				</div>
+
+				<div class="field" id="custom-fmt-wrapper" style="display:none">
+					<label for="custom-fmt">Custom Format String</label>
+					<input type="text" id="custom-fmt" placeholder='e.g. bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4]' />
+				</div>
+
+				<div class="field">
+					<label for="output-tmpl">Output Filename Template</label>
+					<select id="output-tmpl">
+						<option value="%(title)s.%(ext)s">Title.ext (default)</option>
+						<option value="%(uploader)s - %(title)s.%(ext)s">Uploader - Title.ext</option>
+						<option value="%(upload_date)s - %(title)s.%(ext)s">Date - Title.ext</option>
+						<option value="%(playlist_index)s - %(title)s.%(ext)s">Index - Title.ext (playlists)</option>
+						<option value="%(id)s.%(ext)s">VideoID.ext</option>
+						<option value="custom">Custom template…</option>
+					</select>
+				</div>
+				<div class="field" id="custom-tmpl-wrapper" style="display:none">
+					<label for="custom-tmpl">Custom Template</label>
+					<input type="text" id="custom-tmpl" placeholder='%(title)s [%(id)s].%(ext)s' />
+				</div>
+
+				<div class="field">
+					<label for="output-dir">Download Directory (optional)</label>
+					<input type="text" id="output-dir" placeholder='C:\Users\You\Downloads  or  ~/Downloads' />
+				</div>
+
+				<div class="field">
+					<label for="exe-path">yt-dlp Executable Path</label>
+					<div style="position:relative;display:flex;gap:8px;align-items:center;">
+						<input type="text" id="exe-path" value="yt-dlp.exe"
+							placeholder="yt-dlp  or  C:\path\to\yt-dlp.exe"
+							style="font-family:var(--mono);font-size:.82rem;" />
+						<button class="url-paste-btn" onclick="resetExePath()" title="Reset to bundled yt-dlp.exe">↺
+							Reset</button>
+					</div>
+					<p style="font-size:.72rem;color:var(--muted);margin-top:5px;">📦 <strong
+							style="color:#22d3a5;">yt-dlp.exe</strong> is already bundled in this folder — just make
+						sure it's up to date. Change this if yt-dlp is installed elsewhere or globally on PATH.</p>
+				</div>
+			</div>
+		</section>
+
+		<!-- ── OPTIONS ── -->
+		<section>
+			<div class="card">
+				<div class="card-title"><span class="dot"></span>Options</div>
+				<div class="switch-list" id="switch-list">
+					<!-- populated by JS -->
+				</div>
+			</div>
+		</section>
+
+		<!-- ── SUBTITLES ── -->
+		<section>
+			<div class="card">
+				<div class="card-title"><span class="dot"></span>Subtitles &amp; Metadata</div>
+				<div class="grid-2">
+					<div class="field">
+						<label for="sub-lang">Subtitle Language</label>
+						<select id="sub-lang">
+							<option value="">None</option>
+							<option value="en">English</option>
+							<option value="es">Spanish</option>
+							<option value="fr">French</option>
+							<option value="de">German</option>
+							<option value="zh">Chinese</option>
+							<option value="ja">Japanese</option>
+							<option value="ko">Korean</option>
+							<option value="ar">Arabic</option>
+							<option value="hi">Hindi</option>
+							<option value="pt">Portuguese</option>
+							<option value="ru">Russian</option>
+							<option value="all">All available</option>
+						</select>
+					</div>
+					<div class="field">
+						<label for="sub-format">Subtitle Format</label>
+						<select id="sub-format">
+							<option value="srt">SRT</option>
+							<option value="vtt">VTT</option>
+							<option value="ass">ASS</option>
+							<option value="lrc">LRC</option>
+						</select>
+					</div>
+				</div>
+				<div class="switch-list" id="sub-switch-list"></div>
+			</div>
+		</section>
+
+		<!-- ── RATE LIMIT & NETWORK ── -->
+		<section>
+			<div class="card">
+				<div class="card-title"><span class="dot"></span>Network &amp; Rate Limit</div>
+				<div class="grid-3 field">
+					<div>
+						<label for="rate-limit">Rate Limit</label>
+						<select id="rate-limit">
+							<option value="">None</option>
+							<option value="500K">500 KB/s</option>
+							<option value="1M">1 MB/s</option>
+							<option value="2M">2 MB/s</option>
+							<option value="5M">5 MB/s</option>
+							<option value="10M">10 MB/s</option>
+						</select>
+					</div>
+					<div>
+						<label for="retries">Retries</label>
+						<input type="number" id="retries" placeholder="10" min="0" max="99" />
+					</div>
+					<div>
+						<label for="concurrent">Concurrent Frags</label>
+						<input type="number" id="concurrent" placeholder="1" min="1" max="16" />
+					</div>
+				</div>
+				<div class="field">
+					<label for="proxy-input">Proxy URL (optional)</label>
+					<input type="text" id="proxy-input" placeholder="socks5://127.0.0.1:1080  or  http://proxy:port" />
+				</div>
+				<div class="field">
+					<label for="cookies-input">Cookies File (optional)</label>
+					<input type="text" id="cookies-input" placeholder="cookies.txt" />
+				</div>
+			</div>
+		</section>
+
+		<!-- ── PLAYLIST OPTIONS ── -->
+		<section>
+			<div class="card">
+				<div class="card-title"><span class="dot"></span>Playlist Options</div>
+				<div class="grid-3 field">
+					<div>
+						<label for="pl-start">Start Index</label>
+						<input type="number" id="pl-start" placeholder="1" min="1" />
+					</div>
+					<div>
+						<label for="pl-end">End Index</label>
+						<input type="number" id="pl-end" placeholder="last" min="1" />
+					</div>
+					<div>
+						<label for="pl-items">Item Numbers</label>
+						<input type="text" id="pl-items" placeholder="1,3,5-8" />
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<!-- ── GENERATE BUTTON ── -->
+		<section>
+			<button class="generate-btn" id="generate-btn" onclick="generateCmd(event)">
+				⚡ Generate Command
+			</button>
+		</section>
+
+		<!-- ── OUTPUT ── -->
+		<section>
+			<div class="output-card">
+				<div class="output-header">
+					<div class="output-dots"><span></span><span></span><span></span></div>
+					<div class="output-label">Terminal Command</div>
+					<div class="action-btns">
+						<button class="term-btn term-btn-open" id="term-btn" onclick="openTerminal()"
+							title="Run this command in a new cmd.exe window">
+							<span id="term-icon">🖥️</span> <span id="term-text">Open Terminal</span>
+						</button>
+						<button class="term-btn term-btn-bat" id="bat-btn" onclick="downloadBat()"
+							title="Download as a .bat file you can double-click to run">
+							🗂️ Download .bat
+						</button>
+						<button class="copy-btn" id="copy-btn" onclick="copyCmd()">
+							<span id="copy-icon">⎘</span> <span id="copy-text">Copy</span>
+						</button>
+					</div>
+				</div>
+				<div id="command-output">
+					<span class="cmd-placeholder">Your generated command will appear here…</span>
+				</div>
+			</div>
+		</section>
+
+	</div><!-- end .builder -->
+
+	<!-- ── CHEATSHEET ── -->
+	<div class="cheatsheet">
+		<div class="cheat-title">🗂 Common yt-dlp Flags Reference</div>
+		<div class="cheat-grid">
+			<div class="cheat-item">
+				<div class="cheat-cmd">-f "bestvideo+bestaudio"</div>
+				<div class="cheat-desc">Best video merged with best audio</div>
+			</div>
+			<div class="cheat-item">
+				<div class="cheat-cmd">--extract-audio -x</div>
+				<div class="cheat-desc">Extract audio only</div>
+			</div>
+			<div class="cheat-item">
+				<div class="cheat-cmd">--audio-format mp3</div>
+				<div class="cheat-desc">Convert audio to MP3</div>
+			</div>
+			<div class="cheat-item">
+				<div class="cheat-cmd">--write-subs --sub-lang en</div>
+				<div class="cheat-desc">Download English subtitles</div>
+			</div>
+			<div class="cheat-item">
+				<div class="cheat-cmd">--embed-subs</div>
+				<div class="cheat-desc">Embed subtitles into video file</div>
+			</div>
+			<div class="cheat-item">
+				<div class="cheat-cmd">--add-metadata</div>
+				<div class="cheat-desc">Embed title, tags, description</div>
+			</div>
+			<div class="cheat-item">
+				<div class="cheat-cmd">--embed-thumbnail</div>
+				<div class="cheat-desc">Embed thumbnail in file</div>
+			</div>
+			<div class="cheat-item">
+				<div class="cheat-cmd">--yes-playlist</div>
+				<div class="cheat-desc">Force playlist download</div>
+			</div>
+			<div class="cheat-item">
+				<div class="cheat-cmd">--no-playlist</div>
+				<div class="cheat-desc">Download single video only</div>
+			</div>
+			<div class="cheat-item">
+				<div class="cheat-cmd">--cookies-from-browser chrome</div>
+				<div class="cheat-desc">Use browser cookies (login)</div>
+			</div>
+			<div class="cheat-item">
+				<div class="cheat-cmd">-r 1M</div>
+				<div class="cheat-desc">Limit download rate to 1 MB/s</div>
+			</div>
+			<div class="cheat-item">
+				<div class="cheat-cmd">--list-formats</div>
+				<div class="cheat-desc">Show all available formats</div>
+			</div>
+		</div>
+	</div>
+
+	<footer>
+		<p>Built with ❤️ for yt-dlp users &nbsp;·&nbsp; <a href="https://github.com/yt-dlp/yt-dlp"
+				target="_blank">yt-dlp on GitHub</a> &nbsp;·&nbsp; <a
+				href="https://github.com/yt-dlp/yt-dlp/blob/master/README.md" target="_blank">Full Docs</a></p>
+
+		<div
+			style="margin-top: 30px; padding: 24px; background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border); border-radius: var(--radius); display: inline-block; min-width: 320px;">
+			<img src="logo.png" alt="Sen Education" style="height: 32px; margin-bottom: 12px; border-radius: 6px;">
+			<p style="font-weight: 700; color: var(--text); font-size: 0.9rem; margin-bottom: 4px;">&copy; 2026 Sen
+				Education.</p>
+			<p style="color: var(--muted); font-size: 0.78rem; margin-bottom: 16px;">Designed by <span
+					style="color: var(--accent); font-weight: 600;">Jeewaka Sir - Best ICT Class</span></p>
+
+
+		</div>
+	</footer>
+
+	<script>
+		/* ══════════════════════════════════════════════
+		   STATE
+		══════════════════════════════════════════════ */
+		let state = {
+			fmt: 'mp4',
+			switches: {},
+			subSwitches: {}
+		};
+
+		/* ══════════════════════════════════════════════
+		   SWITCHES DEFINITION
+		══════════════════════════════════════════════ */
+		const SWITCHES = [
+			{ id: 'audio-only', label: 'Audio Only', desc: '--extract-audio', flag: '-x' },
+			{ id: 'embed-thumb', label: 'Embed Thumbnail', desc: '--embed-thumbnail', flag: '--embed-thumbnail' },
+			{ id: 'add-metadata', label: 'Add Metadata', desc: '--add-metadata', flag: '--add-metadata' },
+			{ id: 'no-playlist', label: 'No Playlist', desc: 'Single video only', flag: '--no-playlist' },
+			{ id: 'yes-playlist', label: 'Force Playlist', desc: '--yes-playlist', flag: '--yes-playlist' },
+			{ id: 'write-desc', label: 'Save Description', desc: '--write-description', flag: '--write-description' },
+			{ id: 'write-thumb', label: 'Save Thumbnail', desc: '--write-thumbnail', flag: '--write-thumbnail' },
+			{ id: 'keep-video', label: 'Keep Video File', desc: 'After audio extract', flag: '--keep-video' },
+			{ id: 'sponsorblock', label: 'SponsorBlock', desc: 'Remove ads/sponsors', flag: '--sponsorblock-remove all' },
+			{ id: 'no-overwrites', label: 'No Overwrites', desc: 'Skip existing files', flag: '--no-overwrites' },
+			{ id: 'restrict-fn', label: 'Restrict Filename', desc: 'ASCII-safe names', flag: '--restrict-filenames' },
+			{ id: 'geo-bypass', label: 'Geo Bypass', desc: 'Bypass geo-blocks', flag: '--geo-bypass' },
+		];
+
+		const SUB_SWITCHES = [
+			{ id: 'write-subs', label: 'Download Subs', desc: '--write-subs', flag: '--write-subs' },
+			{ id: 'auto-subs', label: 'Auto-generated', desc: 'YouTube auto subs', flag: '--write-auto-subs' },
+			{ id: 'embed-subs', label: 'Embed in Video', desc: '--embed-subs', flag: '--embed-subs' },
+			{ id: 'all-subs', label: 'All Languages', desc: 'Every available sub', flag: '--all-subs' },
+		];
+
+		/* ══════════════════════════════════════════════
+		   INIT SWITCHES
+		══════════════════════════════════════════════ */
+		function buildSwitches(swList, containerId, stateKey) {
+			const container = document.getElementById(containerId);
+			swList.forEach(sw => {
+				state[stateKey][sw.id] = false;
+				const el = document.createElement('div');
+				el.className = 'switch-item';
+				el.id = 'sw-' + sw.id;
+				el.innerHTML = `
+      <div class="switch-label">
+        <strong>${sw.label}</strong>
+        <span>${sw.desc}</span>
+      </div>
+      <div class="toggle"></div>`;
+				el.addEventListener('click', () => toggleSwitch(sw.id, stateKey));
+				container.appendChild(el);
+			});
+		}
+
+		function toggleSwitch(id, stateKey) {
+			state[stateKey][id] = !state[stateKey][id];
+			const el = document.getElementById('sw-' + id);
+			el.classList.toggle('on', state[stateKey][id]);
+		}
+
+		/* ══════════════════════════════════════════════
+		   FORMAT BUTTONS
+		══════════════════════════════════════════════ */
+		function setFmt(btn, fmt) {
+			document.querySelectorAll('.fmt-btn').forEach(b => b.classList.remove('active'));
+			btn.classList.add('active');
+			state.fmt = fmt;
+
+			// If audio format chosen, switch quality to audio-only
+			const audioFmts = ['mp3', 'm4a', 'opus', 'flac'];
+			if (audioFmts.includes(fmt)) {
+				document.getElementById('quality-sel').value = 'ba/b';
+				document.getElementById('codec-sel').value = '';
+			}
+		}
+
+		/* ══════════════════════════════════════════════
+		   QUALITY CUSTOM STRING TOGGLE
+		══════════════════════════════════════════════ */
+		document.addEventListener('DOMContentLoaded', () => {
+			buildSwitches(SWITCHES, 'switch-list', 'switches');
+			buildSwitches(SUB_SWITCHES, 'sub-switch-list', 'subSwitches');
+
+			document.getElementById('quality-sel').addEventListener('change', function () {
+				document.getElementById('custom-fmt-wrapper').style.display =
+					this.value === 'custom' ? 'block' : 'none';
+			});
+
+			document.getElementById('output-tmpl').addEventListener('change', function () {
+				document.getElementById('custom-tmpl-wrapper').style.display =
+					this.value === 'custom' ? 'block' : 'none';
+			});
+
+			// Auto-generate on input changes
+			['url-input', 'quality-sel', 'codec-sel', 'output-tmpl', 'custom-tmpl',
+				'custom-fmt', 'output-dir', 'exe-path', 'sub-lang', 'sub-format', 'rate-limit',
+				'retries', 'concurrent', 'proxy-input', 'cookies-input',
+				'pl-start', 'pl-end', 'pl-items'].forEach(id => {
+					const el = document.getElementById(id);
+					if (el) el.addEventListener('input', autoGenerate);
+					if (el) el.addEventListener('change', autoGenerate);
+				});
+		});
+
+		function autoGenerate() {
+			// Silently regenerate (no alert for missing URL)
+			buildCommand(false);
+		}
+
+		/* ══════════════════════════════════════════════
+		   PASTE URL
+		══════════════════════════════════════════════ */
+		async function pasteUrl() {
+			try {
+				const text = await navigator.clipboard.readText();
+				document.getElementById('url-input').value = text;
+				autoGenerate();
+			} catch (e) {
+				document.getElementById('url-input').focus();
+			}
+		}
+
+		/* ══════════════════════════════════════════════
+		   PRESETS
+		══════════════════════════════════════════════ */
+		const PRESETS = {
+			best: {
+				quality: 'bestvideo+bestaudio/best',
+				fmt: 'mp4',
+				codec: '',
+				switches: { 'add-metadata': true, 'embed-thumb': true },
+				subSwitches: {}
+			},
+			'1080p': {
+				quality: 'bv*[height<=1080]+ba/b[height<=1080]',
+				fmt: 'mp4',
+				codec: 'avc',
+				switches: { 'add-metadata': true, 'no-playlist': true },
+				subSwitches: {}
+			},
+			'720p': {
+				quality: 'bv*[height<=720]+ba/b[height<=720]',
+				fmt: 'mp4',
+				codec: '',
+				switches: { 'no-playlist': true },
+				subSwitches: {}
+			},
+			audio: {
+				quality: 'ba/b',
+				fmt: 'mp3',
+				codec: '',
+				switches: { 'audio-only': true, 'add-metadata': true, 'embed-thumb': true },
+				subSwitches: {}
+			},
+			playlist: {
+				quality: 'bestvideo+bestaudio/best',
+				fmt: 'mp4',
+				codec: '',
+				switches: { 'yes-playlist': true, 'add-metadata': true, 'no-overwrites': true },
+				subSwitches: {}
+			},
+			subtitles: {
+				quality: 'bv*[height<=1080]+ba/b[height<=1080]',
+				fmt: 'mp4',
+				codec: '',
+				switches: { 'add-metadata': true, 'embed-thumb': true },
+				subSwitches: { 'write-subs': true, 'auto-subs': true, 'embed-subs': true }
+			}
+		};
+
+		function applyPreset(name) {
+			const p = PRESETS[name];
+			if (!p) return;
+
+			document.getElementById('quality-sel').value = p.quality;
+			document.getElementById('codec-sel').value = p.codec;
+
+			// format buttons
+			document.querySelectorAll('.fmt-btn').forEach(b => {
+				b.classList.toggle('active', b.dataset.fmt === p.fmt);
+			});
+			state.fmt = p.fmt;
+
+			// reset all switches
+			SWITCHES.forEach(sw => {
+				state.switches[sw.id] = !!p.switches[sw.id];
+				document.getElementById('sw-' + sw.id).classList.toggle('on', state.switches[sw.id]);
+			});
+			SUB_SWITCHES.forEach(sw => {
+				state.subSwitches[sw.id] = !!p.subSwitches[sw.id];
+				document.getElementById('sw-' + sw.id).classList.toggle('on', state.subSwitches[sw.id]);
+			});
+
+			if (p.subSwitches['write-subs'] || p.subSwitches['auto-subs']) {
+				document.getElementById('sub-lang').value = 'en';
+			}
+
+			buildCommand(false);
+		}
+
+		/* ══════════════════════════════════════════════
+		   COMMAND BUILDER
+		══════════════════════════════════════════════ */
+		function buildCommand(warnOnMissingUrl = true) {
+			const url = document.getElementById('url-input').value.trim();
+			const qualSel = document.getElementById('quality-sel').value;
+			const codec = document.getElementById('codec-sel').value;
+			const tmpl = document.getElementById('output-tmpl').value;
+			const customTmpl = document.getElementById('custom-tmpl').value.trim();
+			const outDir = document.getElementById('output-dir').value.trim();
+			const subLang = document.getElementById('sub-lang').value;
+			const subFmt = document.getElementById('sub-format').value;
+			const rateLimit = document.getElementById('rate-limit').value;
+			const retries = document.getElementById('retries').value.trim();
+			const concur = document.getElementById('concurrent').value.trim();
+			const proxy = document.getElementById('proxy-input').value.trim();
+			const cookies = document.getElementById('cookies-input').value.trim();
+			const plStart = document.getElementById('pl-start').value.trim();
+			const plEnd = document.getElementById('pl-end').value.trim();
+			const plItems = document.getElementById('pl-items').value.trim();
+			const customFmt = document.getElementById('custom-fmt').value.trim();
+			const exePath = (document.getElementById('exe-path').value.trim() || 'yt-dlp.exe');
+
+			// Wrap exe path in quotes only if it contains spaces or a backslash (i.e. a full path)
+			const exeCmd = (exePath.includes(' ') || exePath.includes('\\')) ? `"${exePath}"` : exePath;
+			const parts = [exeCmd];
+
+			// Format/quality
+			const audioFmts = ['mp3', 'm4a', 'opus', 'flac'];
+			const isAudioOut = audioFmts.includes(state.fmt);
+
+			// format string
+			let fmtStr = qualSel === 'custom' ? customFmt : qualSel;
+			if (fmtStr) {
+				// Append codec preference
+				if (codec && !isAudioOut) {
+					fmtStr = `bv*[vcodec^=${codec}][height<=${extractHeight(qualSel)}]+ba/b`;
+				}
+				parts.push(`-f "${fmtStr}"`);
+			}
+
+			// Merge output format (for video) or audio extraction
+			if (state.switches['audio-only'] || isAudioOut) {
+				parts.push('-x');
+				parts.push(`--audio-format ${state.fmt}`);
+				parts.push('--audio-quality 0');
+			} else {
+				parts.push(`--merge-output-format ${state.fmt}`);
+			}
+
+			// Output directory + template
+			const finalTmpl = tmpl === 'custom' ? (customTmpl || '%(title)s.%(ext)s') : tmpl;
+			if (outDir) {
+				const sep = outDir.endsWith('/') || outDir.endsWith('\\') ? '' : '/';
+				parts.push(`-o "${outDir}${sep}${finalTmpl}"`);
+			} else {
+				parts.push(`-o "${finalTmpl}"`);
+			}
+
+			// Rate limit
+			if (rateLimit) parts.push(`-r ${rateLimit}`);
+
+			// Retries
+			if (retries) parts.push(`--retries ${retries}`);
+
+			// Concurrent fragments
+			if (concur && parseInt(concur) > 1) parts.push(`--concurrent-fragments ${concur}`);
+
+			// Proxy
+			if (proxy) parts.push(`--proxy "${proxy}"`);
+
+			// Cookies
+			if (cookies) parts.push(`--cookies "${cookies}"`);
+
+			// Subtitles
+			if (subLang && (state.subSwitches['write-subs'] || state.subSwitches['auto-subs'] || state.subSwitches['all-subs'])) {
+				if (!state.subSwitches['all-subs'] && subLang !== 'all') {
+					parts.push(`--sub-lang ${subLang}`);
+				}
+				parts.push(`--sub-format ${subFmt}`);
+			}
+
+			// Subtitle switches
+			SUB_SWITCHES.forEach(sw => {
+				if (state.subSwitches[sw.id]) parts.push(sw.flag);
+			});
+
+			// Main switches (excluding audio-only which we handled above)
+			SWITCHES.forEach(sw => {
+				if (sw.id !== 'audio-only' && state.switches[sw.id]) {
+					parts.push(sw.flag);
+				}
+			});
+
+			// Playlist options
+			if (plStart) parts.push(`--playlist-start ${plStart}`);
+			if (plEnd) parts.push(`--playlist-end ${plEnd}`);
+			if (plItems) parts.push(`--playlist-items "${plItems}"`);
+
+			// URL (last)
+			if (url) {
+				parts.push(`"${url}"`);
+			} else if (warnOnMissingUrl) {
+				alert('Please enter a URL!');
+				return;
+			}
+
+			// Format and display
+			const raw = parts.join(' \\\n  ');
+			renderCommand(parts, url);
+			return raw;
+		}
+
+		function extractHeight(fmtStr) {
+			const m = fmtStr.match(/height<=(\d+)/);
+			return m ? m[1] : '1080';
+		}
+
+		/* ══════════════════════════════════════════════
+		   SYNTAX-HIGHLIGHTED OUTPUT
+		══════════════════════════════════════════════ */
+		function renderCommand(parts, url) {
+			const outputEl = document.getElementById('command-output');
+			let html = '';
+			parts.forEach((part, i) => {
+				const isFirst = i === 0;
+				const isUrl = part.includes(url) && url.length > 0;
+
+				if (isFirst) {
+					html += `<span class="cmd-base">${part}</span>`;
+				} else if (isUrl) {
+					html += ` \\\n  <span class="cmd-url">${escapeHtml(part)}</span>`;
+				} else if (part.startsWith('-')) {
+					const spaceIdx = part.indexOf(' ');
+					if (spaceIdx > -1) {
+						const flag = part.slice(0, spaceIdx);
+						const value = part.slice(spaceIdx);
+						html += ` \\\n  <span class="cmd-flag">${escapeHtml(flag)}</span><span class="cmd-value">${escapeHtml(value)}</span>`;
+					} else {
+						html += ` \\\n  <span class="cmd-flag">${escapeHtml(part)}</span>`;
+					}
+				} else {
+					html += ` \\\n  <span class="cmd-value">${escapeHtml(part)}</span>`;
+				}
+			});
+			outputEl.innerHTML = html;
+		}
+
+		function escapeHtml(str) {
+			return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+		}
+
+		/* ══════════════════════════════════════════════
+		   GENERATE (button click)
+		══════════════════════════════════════════════ */
+		function generateCmd(event) {
+			// Ripple
+			const btn = document.getElementById('generate-btn');
+			const ripple = document.createElement('span');
+			ripple.className = 'btn-ripple';
+			const rect = btn.getBoundingClientRect();
+			const size = Math.max(rect.width, rect.height);
+			ripple.style.cssText = `width:${size}px;height:${size}px;left:${event.clientX - rect.left - size / 2}px;top:${event.clientY - rect.top - size / 2}px`;
+			btn.appendChild(ripple);
+			setTimeout(() => ripple.remove(), 600);
+
+			buildCommand(true);
+		}
+
+		/* ══════════════════════════════════════════════
+		   COPY
+		══════════════════════════════════════════════ */
+		function copyCmd() {
+			const output = document.getElementById('command-output');
+			const text = output.innerText;
+			if (!text || text.includes('Your generated command')) return;
+
+			// Collapse multi-line to single line for clipboard
+			const single = text.replace(/\s*\\\n\s*/g, ' ');
+			navigator.clipboard.writeText(single).then(() => {
+				const btn = document.getElementById('copy-btn');
+				const icon = document.getElementById('copy-icon');
+				const txt = document.getElementById('copy-text');
+				btn.classList.add('copied');
+				icon.textContent = '✓';
+				txt.textContent = 'Copied!';
+				showToast();
+				setTimeout(() => {
+					btn.classList.remove('copied');
+					icon.textContent = '⎘';
+					txt.textContent = 'Copy';
+				}, 2000);
+			});
+		}
+
+		function showToast(msg) {
+			const t = document.getElementById('toast');
+			t.textContent = msg || '✓ Command copied to clipboard!';
+			t.classList.add('show');
+			setTimeout(() => t.classList.remove('show'), 2400);
+		}
+
+		/* ══════════════════════════════════════════════
+		   GET RAW SINGLE-LINE COMMAND
+		══════════════════════════════════════════════ */
+		function getRawCommand() {
+			const output = document.getElementById('command-output');
+			const text = output.innerText;
+			if (!text || text.includes('Your generated command')) return null;
+			// Collapse multi-line (backslash-newline continuations) to single line
+			return text.replace(/\s*\\\n\s*/g, ' ').trim();
+		}
+
+		/* ══════════════════════════════════════════════
+		   OPEN TERMINAL (via PHP → cmd.exe)
+		══════════════════════════════════════════════ */
+		async function openTerminal() {
+			const cmd = getRawCommand();
+			if (!cmd) { alert('Generate a command first!'); return; }
+
+			const btn = document.getElementById('term-btn');
+			const icon = document.getElementById('term-icon');
+			const txt = document.getElementById('term-text');
+
+			// Loading state
+			btn.classList.add('loading');
+			btn.disabled = true;
+			icon.textContent = '⏳';
+			txt.textContent = 'Opening…';
+
+			try {
+				const res = await fetch('open_terminal.php', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({ command: cmd })
+				});
+				const data = await res.json();
+
+				if (data.success) {
+					icon.textContent = '✅';
+					txt.textContent = 'Opened!';
+					showToast('✅ Terminal window opened!');
+					setTimeout(() => {
+						icon.textContent = '🖥️';
+						txt.textContent = 'Open Terminal';
+					}, 2500);
+				} else {
+					throw new Error(data.error || 'Server error');
+				}
+			} catch (err) {
+				btn.classList.add('error');
+				icon.textContent = '❌';
+				txt.textContent = 'Failed';
+				showToast('❌ Could not open terminal: ' + err.message);
+				setTimeout(() => {
+					btn.classList.remove('error');
+					icon.textContent = '🖥️';
+					txt.textContent = 'Open Terminal';
+				}, 2800);
+			} finally {
+				btn.classList.remove('loading');
+				btn.disabled = false;
+			}
+		}
+
+		/* ══════════════════════════════════════════════
+		   DOWNLOAD .BAT
+		══════════════════════════════════════════════ */
+		function downloadBat() {
+			const cmd = getRawCommand();
+			if (!cmd) { alert('Generate a command first!'); return; }
+
+			// If the exe path is relative (e.g. yt-dlp.exe), cd to the batch file's own folder first
+			const exeVal = document.getElementById('exe-path').value.trim() || 'yt-dlp.exe';
+			const isRelativePath = !exeVal.match(/^[a-zA-Z]:\\/);  // not an absolute path
+
+			const lines = [
+				'@echo off',
+				'title yt-dlp Download',
+				...(isRelativePath ? ['cd /d "%~dp0"'] : []),
+				'echo Running yt-dlp command...',
+				'echo.',
+				cmd,
+				'echo.',
+				'echo Done! Press any key to close.',
+				'pause > nul'
+			];
+
+			const content = lines.join('\r\n');
+			const blob = new Blob([content], { type: 'text/plain' });
+			const url = URL.createObjectURL(blob);
+			const a = document.createElement('a');
+			a.href = url;
+			a.download = 'yt-dlp-download.bat';
+			document.body.appendChild(a);
+			a.click();
+			document.body.removeChild(a);
+			URL.revokeObjectURL(url);
+			showToast('📁 yt-dlp-download.bat saved!');
+		}
+
+		function resetExePath() {
+			document.getElementById('exe-path').value = 'yt-dlp.exe';
+			autoGenerate();
+		}
+	</script>
+</body>
+
+</html>
